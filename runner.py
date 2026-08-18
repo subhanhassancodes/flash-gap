@@ -37,7 +37,10 @@ def call_gemini(model_key: str, prompt: str) -> dict:
     start = time.time()
     resp = requests.post(
         url,
-        params={"key": GEMINI_API_KEY},
+        headers={
+            "x-goog-api-key": GEMINI_API_KEY,
+            "Content-Type": "application/json",
+        },
         json={
             "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
@@ -115,5 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    
