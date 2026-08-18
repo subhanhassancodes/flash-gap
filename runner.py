@@ -9,7 +9,10 @@ from score import extract_code, run_test
 
 load_dotenv()
 
-RUNS_PER_TASK = 3
+MAX_TASKS = 20  # keeps total calls to gemini-3.5-flash under its 20/day free-tier cap
+TASKS = TASKS[:MAX_TASKS]
+
+RUNS_PER_TASK = 1
 RESULTS_PATH = "results.jsonl"
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")

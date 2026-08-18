@@ -22,7 +22,8 @@ of vibes — and to publish everything (tasks, scoring code, raw results) so any
 rerun it and get the same answer.
 
 **✅ What this measures:** single-shot, self-contained Python function generation, scored
-by automated test execution, run 3x per model to separate real signal from sampling noise.
+by automated test execution, 1 run per task per model due to a free-tier daily quota cap on
+the full-tier model (see Methodology notes).
 
 **🚫 What this explicitly does NOT measure:** multi-file or repo-level work, agentic /
 tool-use ability, code style or readability, non-Python languages, or behavior across
@@ -45,7 +46,7 @@ different reasoning-effort settings. See [`tasks.py`](tasks.py) for the full tas
 │ sends every task to:             │
 │   - Gemini 3.5 Flash             │
 │   - Gemini 3.5 Flash-Lite        │
-│ 3 runs per model                 │
+│ 1 run per model                  │
 └──────────────────────────────────┘
                   │
                   ▼
@@ -78,7 +79,7 @@ different reasoning-effort settings. See [`tasks.py`](tasks.py) for the full tas
 | Step | File | What it does |
 |---|---|---|
 | 1️⃣ | [`tasks.py`](tasks.py) | 30 Python problems (⅓ easy / medium / hard), each with a hidden `pytest` suite |
-| 2️⃣ | [`runner.py`](runner.py) | Sends every task to both models, 3 runs each (180 calls total) |
+| 2️⃣ | [`runner.py`](runner.py) | Sends every task to both models, 1 run each (60 calls total) |
 | 3️⃣ | [`score.py`](score.py) | Runs the generated function against its hidden tests in an isolated, timed subprocess |
 | 4️⃣ | [`analyze.py`](analyze.py) | Aggregates everything into `results.md` — pass rate, variance, cost, disagreements |
 
@@ -128,7 +129,7 @@ get committed.
 ## ▶️ Running it
 
 ```bash
-python3 runner.py      # 30 tasks x 2 models x 3 runs = 180 calls, ~6 minutes
+python3 runner.py      # 30 tasks x 2 models x 1 run = 60 calls, ~2 minutes
 python3 analyze.py     # writes results.md
 ```
 
@@ -154,8 +155,12 @@ output into an actual finding. 🔍
 
 - **No partial credit.** A task passes only if 100% of its hidden tests pass — avoids
   subjective judgment calls about "almost correct."
-- **3 runs per task per model**, reported as mean and standard deviation — a single run
-  can't distinguish a real capability gap from ordinary sampling variance.
+- **1 run per task per model.** Google's free tier caps the full `gemini-3.5-flash` model
+  at 20 requests/day — far below the 90 calls 3 runs would require. Single-run results
+  can't separate a real capability gap from ordinary sampling variance, so treat the
+  numbers here as a first pass, not a final verdict. `runner.py` still supports multiple
+  runs (set `RUNS_PER_TASK`) for anyone rerunning this with a paid tier or more quota
+  headroom.
 - **Tests verified before scoring anything real.** Every one of the 30 test suites was
   run against a known-correct reference implementation first, to rule out the benchmark
   itself being the buggy part.
