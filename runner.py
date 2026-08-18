@@ -15,8 +15,8 @@ RESULTS_PATH = "results.jsonl"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 MODELS = {
-    "gemini-3.6-flash": {
-        "model_id": "gemini-3.6-flash",
+    "gemini-3.5-flash": {
+        "model_id": "gemini-3.5-flash",
     },
     "gemini-3.5-flash-lite": {
         "model_id": "gemini-3.5-flash-lite",

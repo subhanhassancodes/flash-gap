@@ -3,7 +3,7 @@
 **Does paying for Gemini's full Flash tier actually get you better code than the free,
 low-latency Flash-Lite tier — or is the gap smaller than the pricing page implies?**
 
-A 30-task, hand-verified, automatically-scored benchmark comparing **Gemini 3.6 Flash** ⚡
+A 30-task, hand-verified, automatically-scored benchmark comparing **Gemini 3.5 Flash** ⚡
 against **Gemini 3.5 Flash-Lite** ⚡ on self-contained Python coding correctness. Every
 task is scored by actually *running* the generated code against hidden tests — no LLM
 judge, no subjective grading, no cherry-picked examples.
@@ -43,7 +43,7 @@ different reasoning-effort settings. See [`tasks.py`](tasks.py) for the full tas
 ┌──────────────────────────────────┐
 │ runner.py                        │
 │ sends every task to:             │
-│   - Gemini 3.6 Flash             │
+│   - Gemini 3.5 Flash             │
 │   - Gemini 3.5 Flash-Lite        │
 │ 3 runs per model                 │
 └──────────────────────────────────┘
@@ -100,6 +100,8 @@ flash-gap/
 │   └── solution.py             correct reference impl, used to verify tasks.py
 ├── results.jsonl               raw per-call data (generated after running)
 ├── results.md                  final report (generated after running)
+├── .env.example                 copy to .env and add your key
+├── .gitignore
 └── README.md
 ```
 
@@ -108,12 +110,20 @@ flash-gap/
 ## ⚙️ Setup
 
 ```bash
-pip install requests pytest
-export GEMINI_API_KEY=your_key_here      # Windows: set GEMINI_API_KEY=your_key_here
+pip install requests pytest python-dotenv
 ```
 
 Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey) — 🆓 no
 credit card or billing account required for Flash / Flash-Lite on the free tier.
+
+Copy `.env.example` to a new file called `.env` and paste your key in:
+
+```
+GEMINI_API_KEY=your_key_here
+```
+
+`runner.py` loads this automatically. `.env` is already in `.gitignore` — it will never
+get committed.
 
 ## ▶️ Running it
 
