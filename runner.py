@@ -9,7 +9,7 @@ from score import extract_code, run_test
 
 load_dotenv()
 
-MAX_TASKS = 20  # keeps total calls to gemini-3.5-flash under its 20/day free-tier cap
+MAX_TASKS = 15  # safety margin under the confirmed 20/day free-tier cap for gemini-3.5-flash
 TASKS = TASKS[:MAX_TASKS]
 
 RUNS_PER_TASK = 1
@@ -33,7 +33,7 @@ SYSTEM_PROMPT = (
 )
 
 
-def call_gemini(model_key: str, prompt: str) -> dict:
+def call_gemini(model_key: str, prompt: str, retry_ok: bool = True) -> dict:
     model_id = MODELS[model_key]["model_id"]
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent"
 
@@ -54,6 +54,19 @@ def call_gemini(model_key: str, prompt: str) -> dict:
     data = resp.json()
 
     if "candidates" not in data:
+        error = data.get("error", {})
+        is_daily_quota = "PerDay" in str(error)
+        retry_delay = None
+        for detail in error.get("details", []):
+            if detail.get("@type", "").endswith("RetryInfo"):
+                retry_delay = detail.get("retryDelay", "")
+
+        if retry_ok and not is_daily_quota and retry_delay:
+            wait_seconds = float(retry_delay.rstrip("s")) + 2
+            print(f"  rate limited, waiting {wait_seconds:.0f}s then retrying once...")
+            time.sleep(wait_seconds)
+            return call_gemini(model_key, prompt, retry_ok=False)
+
         raise RuntimeError(f"Gemini API error: {data}")
 
     text = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
